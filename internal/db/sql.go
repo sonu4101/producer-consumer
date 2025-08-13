@@ -22,5 +22,15 @@ func ConnectDatabase(dsn string) *sql.DB {
 	if err := db.Ping(); err != nil {
 		log.Fatal("failed to ping MySQL:", err)
 	}
+	 _, err = db.Exec(`
+        CREATE TABLE IF NOT EXISTS messages (
+            id BIGINT AUTO_INCREMENT PRIMARY KEY,
+            message VARCHAR(255) NOT NULL,
+            created_at DATETIME NOT NULL
+        )
+    `)
+    if err != nil {
+        log.Fatal("failed to create messages table:", err)
+    }
 	return db
 }
