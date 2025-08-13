@@ -11,7 +11,6 @@ type Config struct {
 	RPS         int
 	Duration    time.Duration
 	DSN         string
-	ChannelSize int
 }
 
 func Load() Config {
@@ -27,6 +26,5 @@ func Load() Config {
 		RPS:         *rps,
 		Duration:    time.Duration(*duration) * time.Second,
 		DSN:         "root:root@123@tcp(localhost:3306)/producer_consumer", // Hardcoded for local dev
-		ChannelSize: 1000,
 	}
 }
