@@ -20,7 +20,7 @@ spec:
             - containerPort: 8080
           command: ["/root/app"]
           args:
-            ["--producers=10", "--consumers=5", "--rps=500", "--duration=1"]
+            ["--producers=10", "--consumers=5", "--rps=20", "--duration=2"]
 ---
 apiVersion: v1
 kind: Service

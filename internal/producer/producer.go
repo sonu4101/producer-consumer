@@ -13,29 +13,42 @@ import (
 )
 
 func StartProducers(producerCount int, rps int, duration time.Duration, messageCh chan<- model.Message, produced *int64, wgDone *sync.WaitGroup) {
-	limiter := rate.NewLimiter(rate.Limit(rps), rps) // burst = rps to allow initial burst
+	limiter := rate.NewLimiter(rate.Limit(rps), rps)
 	ctx, cancel := context.WithTimeout(context.Background(), duration)
-	defer cancel()
+	
+	go func() {
+		time.Sleep(duration)
+		cancel()
+	}()
 
 	for i := 0; i < producerCount; i++ {
 		wgDone.Add(1)
 
 		go func(id int) {
 			defer wgDone.Done()
+			
 			for {
-				if err := limiter.Wait(ctx); err != nil {
-					return // duration ended
-				}
-
 				select {
 				case <-ctx.Done():
 					return
 				default:
-					cur := atomic.AddInt64(produced, 1)
-					messageCh <- model.Message{
-						Message:   fmt.Sprintf("data-%d", cur),
-						CreatedAt: time.Now(),
-					}
+				}
+
+				if err := limiter.Wait(ctx); err != nil {
+					return // Context deadline exceeded
+				}
+
+				cur := atomic.AddInt64(produced, 1)
+				msg := model.Message{
+					Message:   fmt.Sprintf("data-%d", cur),
+					CreatedAt: time.Now(),
+				}
+				
+				select {
+				case messageCh <- msg:
+					// Message sent successfully
+				case <-ctx.Done():
+					return
 				}
 			}
 		}(i + 1)
